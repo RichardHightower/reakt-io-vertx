@@ -19,7 +19,7 @@ public class HttpServerFactoryImplTest {
         HttpServer.getHttpServerFactory().createHttpServer(new HttpServerOptions().setPort(8080)).setRequestStream(new Stream<HttpServerRequest>() {
             @Override
             public void onNext(StreamResult<HttpServerRequest> result) {
-                
+
             }
         }).listen(new Callback<HttpServer>() {
             @Override
