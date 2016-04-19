@@ -8,28 +8,50 @@ import io.advantageous.reakt.io.http.websocket.ServerWebSocket;
 
 public class HttpServerImpl implements HttpServer {
 
-    @Override
-    public HttpServer setRequestStream(Stream<HttpServerRequest> stream) {
-        return null;
+    private final io.vertx.core.http.HttpServer httpServer;
+
+
+    public HttpServerImpl(io.vertx.core.http.HttpServer httpServer) {
+        this.httpServer = httpServer;
     }
 
     @Override
-    public HttpServer setWebSocketStream(Stream<ServerWebSocket> handler) {
-        return null;
+    public HttpServer setRequestStream(final Stream<HttpServerRequest> stream) {
+        httpServer.requestHandler(request -> stream.reply(new HttpServerRequestImpl(request)));
+        return this;
+    }
+
+    @Override
+    public HttpServer setWebSocketStream(Stream<ServerWebSocket> stream) {
+        httpServer.websocketHandler(serverWebSocket -> stream.reply(new ServerWebSocketImpl(serverWebSocket)));
+        return this;
     }
 
     @Override
     public HttpServer listen(Callback<HttpServer> listenHandler) {
-        return null;
+        httpServer.listen(event -> {
+            if (event.failed()) {
+                listenHandler.reject(event.cause());
+            } else {
+                listenHandler.resolve(HttpServerImpl.this);
+            }
+        });
+        return this;
     }
 
     @Override
     public void close(Callback<Void> closedHandler) {
-
+        httpServer.close(event -> {
+            if (event.failed()) {
+                closedHandler.reject(event.cause());
+            }else {
+                closedHandler.replyDone();
+            }
+        });
     }
 
     @Override
     public void close() {
-
+        httpServer.close();
     }
 }
